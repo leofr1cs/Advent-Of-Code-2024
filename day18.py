@@ -20,20 +20,20 @@ ALL_DIRECTIONS = DIRECTIONS + DIAGONALS
 
 # Useful itertools combinations
 def get_combinations(iterable, r):
-    \"\"\"Return combinations of the given iterable of length r.\"\"\"
+    "Return combinations of the given iterable of length r."
     return combinations(iterable, r)
 
 def get_permutations(iterable, r=None):
-    \"\"\"Return permutations of the given iterable of length r.\"\"\"
+    "Return permutations of the given iterable of length r."
     return permutations(iterable, r)
 
 def cartesian_product(*iterables):
-    \"\"\"Return the cartesian product of the given iterables.\"\"\"
+    "Return the cartesian product of the given iterables."
     return product(*iterables)
 
 # Parsing helpers
 def extract_numbers(s):
-    \"\"\"Extract all integers from a string.\"\"\"
+    "Extract all integers from a string."
     return list(map(int, re.findall(r'-?\\d+', s)))
 
 # Example use case of constants and helpers
