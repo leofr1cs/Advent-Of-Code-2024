@@ -1,75 +1,48 @@
 from aocd import get_data
-from itertools import combinations, permutations, product, chain
-from collections import Counter, defaultdict, deque
-import math
-import re
 
 # Fetch the day's input data
 data = get_data(day=2, year=2024)  # Specify the day and year
 
-# data = """7 6 4 2 1
-# 1 2 7 8 9
-# 9 7 6 2 1
-# 1 3 2 4 5
-# 8 6 4 4 1
-# 1 3 6 7 9"""
+# Parse input data into a list of lists of integers
+data = [[int(v) for v in row.split()] for row in data.split("\n")]
 
+def is_safe(row):
+    """
+    Checks if a row is "safe" based on the given criteria.
+    A row is safe if:
+    1. It maintains a consistent ascending or descending order.
+    2. The difference between consecutive numbers is at most 3.
+    """
+    ascending = row[1] > row[0]
+    for i in range(len(row) - 1):
+        current, next_val = row[i], row[i + 1]
+        if ascending:
+            if current >= next_val or abs(current - next_val) > 3:
+                return False
+        else:
+            if next_val >= current or abs(current - next_val) > 3:
+                return False
+    return True
 
-data = [[int(v) for v in row.split(" ")] for row in data.split("\n")]
+# Part 1: Count rows that are initially safe
+safe_count = sum(1 for row in data if is_safe(row))
+print("Part 1:", safe_count)
 
-safeCount = 0
-for r in data:
-    safe = True
-    if r[1] > r[0]: asc = True
-    else: asc = False
-    for i in range(len(r) - 1):
-        c, n = r[i], r[i+1]
-        if asc:
-            if c >= n:
-                safe = False
-                break
-        elif not(asc):
-            if n >= c:
-                safe = False
-                break
-        if abs(n-c) > 3:
-            safe = False
-            break
-    if safe:    safeCount += 1
+# Part 2: Handle rows that can be made safe by removing one element
+def can_be_safe(row):
+    """
+    Determines if a row can be made safe by removing one element.
+    """
+    for i in range(len(row)):
+        modified_row = row[:i] + row[i + 1:]  # Remove the ith element
+        if is_safe(modified_row):
+            return True
+    return False
 
-print("Part1: ", safeCount)
+# Part 2: Count safe rows, considering modifications
+safe_count = 0
+for row in data:
+    if is_safe(row) or can_be_safe(row):
+        safe_count += 1
 
-def isSafe(r):
-    safe = True
-    if r[1] > r[0]: asc = True
-    else: asc = False
-    for i in range(len(r) - 1):
-        c, n = r[i], r[i+1]
-        if asc:
-            if c >= n:
-                safe = False
-                break
-        elif not(asc):
-            if n >= c:
-                safe = False
-                break
-        if abs(n-c) > 3:
-            safe = False
-            break
-    return safe
-
-safeCount = 0
-for r in data:
-    if isSafe(r): safeCount += 1
-    else:
-        # Try all variants with a reading removed
-        for i in range(len(r)):
-            r2 = r[::]
-            r2.pop(i)
-            if isSafe(r2):
-                safeCount += 1
-                break
-
-print("Part2: ", safeCount)
-
-print()
+print("Part 2:", safe_count)
