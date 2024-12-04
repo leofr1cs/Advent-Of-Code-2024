@@ -4,46 +4,57 @@ from collections import Counter, defaultdict, deque
 import math
 import re
 
-# Fetch the day's input data
-data = get_data(day=4, year=2024)  # Specify the day and year
-print(data)
+data = get_data(day=4, year=2024) 
 
-# Useful constants and helpers
-NORTH, SOUTH, EAST, WEST = (-1, 0), (1, 0), (0, 1), (0, -1)
-DIRECTIONS = [NORTH, SOUTH, EAST, WEST]
+def getCoords(x, y, dx, dy, SIZE_X, SIZE_Y, length=4):
+    """
+    Get the coordinates of a sequence in the grid starting from (x, y)
+    in the direction (dx, dy) with the given length.
+    """
+    coords = [(x + dx * i, y + dy * i) for i in range(length)]
+    # Check if all coordinates are within the grid bounds
+    if all(0 <= cx < SIZE_X and 0 <= cy < SIZE_Y for cx, cy in coords):
+        return coords
+    return None
 
-# Diagonal directions (optional, used in some puzzles)
-DIAGONALS = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 
-# Grid direction vectors (including diagonals)
-ALL_DIRECTIONS = DIRECTIONS + DIAGONALS
+def part1(data):
+    # XMAS hunting
+    data = [[l for l in d] for d in data.split("\n")]
+    SIZE_X = len(data)
+    SIZE_Y = len(data[0])
+    dataDict = {(x, y): data[x][y] for x in range(SIZE_X) for y in range(SIZE_Y)}
+    
+    count = 0
+    target = "XMAS"
+    length = len(target)
+    
+    # Iterate through every cell in the grid
+    for x in range(SIZE_X):
+        for y in range(SIZE_Y):
+            # Check all directions
+            for dx, dy in [(1, 0), (0, 1), (1, 1), (1, -1)]:
+                coords = getCoords(x, y, dx, dy, SIZE_X, SIZE_Y, length)
+                if coords:
+                    # Build the string dynamically
+                    sequence = "".join(dataDict[c] for c in coords)
+                    if sequence == target:
+                        count += 1
 
-# Useful itertools combinations
-def get_combinations(iterable, r):
-    "Return combinations of the given iterable of length r."
-    return combinations(iterable, r)
+    return count
 
-def get_permutations(iterable, r=None):
-    "Return permutations of the given iterable of length r."
-    return permutations(iterable, r)
 
-def cartesian_product(*iterables):
-    "Return the cartesian product of the given iterables."
-    return product(*iterables)
+# Test data
+data = """MMMSXXMASM
+MSAMXMSMSA
+AMXSXMAAMM
+MSAMASMSMX
+XMASAMXAMM
+XXAMMXXAMA
+SMSMSASXSS
+SAXAMASAAA
+MAMMMXMMMM
+MXMXAXMASX"""
 
-# Parsing helpers
-def extract_numbers(s):
-    "Extract all integers from a string."
-    return list(map(int, re.findall(r'-?\\d+', s)))
+print(part1(data))  # Output: Count of "XMAS" strings
 
-# Example use case of constants and helpers
-if __name__ == "__main__":
-    # Parse the input if needed
-    numbers = extract_numbers(data)
-    print("Extracted numbers:", numbers)
-
-    # Example: Iterate over the grid using direction vectors
-    x, y = 0, 0  # Starting point
-    for dx, dy in DIRECTIONS:
-        nx, ny = x + dx, y + dy
-        print(f"Move to ({{nx}}, {{ny}})")
