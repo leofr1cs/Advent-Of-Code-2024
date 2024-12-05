@@ -1,8 +1,4 @@
 from aocd import get_data
-from itertools import combinations, permutations, product, chain
-from collections import Counter, defaultdict, deque
-import math
-import re
 
 data = get_data(day=5, year=2024) 
 # data = """47|53
