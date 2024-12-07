@@ -1,10 +1,106 @@
-import os
+import turtle
 import time
+
+# Constants
 OBSTACLE = "#"
 EMPTY = "."
-DIR = {'^': (0, -1), '>': (1, 0) ,'v': (0, 1), '<': (-1, 0) }
+DIR = {'^': (0, -1), '>': (1, 0), 'v': (0, 1), '<': (-1, 0)}
 
-# Sample data for testing
+# Parsing the input into a grid
+def parse_input(data):
+    rows = data.split("\n")
+    w = len(rows[0])
+    h = len(rows)
+    d = {(c, r): val for r, row in enumerate(rows) for c, val in enumerate(row)}
+    return d, w, h
+
+# Adjust the canvas size dynamically
+def setup_canvas(d, w, h, cell_size=10):
+    screen = turtle.Screen()
+    screen.title("Turtle Guard Path")
+    
+    # Set the screen size based on the grid dimensions
+    screen_width = min(800, w * cell_size + 50)  # Limit max width
+    screen_height = min(600, h * cell_size + 50)  # Limit max height
+    screen.setup(width=screen_width, height=screen_height)
+    
+    screen.tracer(0)  # Disable automatic updates for smoother animation
+    turtle.bgcolor("white")
+    
+    drawer = turtle.Turtle()
+    drawer.penup()
+    drawer.speed("fastest")
+    
+    # Draw the obstacles
+    for (x, y), value in d.items():
+        if value == OBSTACLE:
+            drawer.goto(x * cell_size - (w * cell_size) // 2, (h * cell_size) // 2 - y * cell_size)
+            drawer.shape("square")
+            drawer.shapesize(cell_size / 20)
+            drawer.fillcolor("black")
+            drawer.stamp()
+    
+    return screen
+
+# Move the turtle following the guard logic
+def part1(data):
+    d, w, h = parse_input(data)
+    cell_size = 10  # Reduced cell size for smaller screens
+    
+    # Find the guard's starting position
+    for (c, r), value in d.items():
+        if value == "^":
+            g = (c, r)
+    
+    # Setup the canvas
+    screen = setup_canvas(d, w, h, cell_size)
+    guard = turtle.Turtle()
+    guard.shape("turtle")
+    guard.color("blue")
+    guard.penup()
+    guard.speed("slowest")
+    guard.goto(g[0] * cell_size - (w * cell_size) // 2, (h * cell_size) // 2 - g[1] * cell_size)
+    
+    # Enable the pen for leaving a trail
+    guard.pendown()
+    guard.pensize(1)  # Thinner trail
+    guard.pencolor("blue")
+    
+    seen = {g}
+    
+    while True:
+        curGua = d[g]
+        orient = DIR[curGua]
+        next = (orient[0] + g[0], orient[1] + g[1])
+        
+        # Check bounds and obstacles
+        if 0 <= next[0] < w and 0 <= next[1] < h:
+            if d[next] == OBSTACLE:
+                # Rotate right
+                index = list(DIR.keys()).index(curGua)
+                index = (index + 1) % len(DIR.keys())
+                curGua = list(DIR.keys())[index]
+                orient = DIR[curGua]
+                next = (orient[0] + g[0], orient[1] + g[1])
+            
+            # Update positions and display
+            d[g] = "X"
+            g = next
+            d[g] = curGua
+            seen.add(g)
+            
+            # Move the turtle and leave a trail
+            guard.goto(g[0] * cell_size - (w * cell_size) // 2, (h * cell_size) // 2 - g[1] * cell_size)
+            guard.setheading(["^", ">", "v", "<"].index(curGua) * 90)
+            
+            screen.update()
+            time.sleep(0.05)  # Pause to show movement
+        else:
+            break  # Stop when the guard cannot move
+    
+    return len(seen)
+
+# Example Data
 data = """....#.....
 .........#
 ..........
@@ -147,62 +243,8 @@ data = """#.....#.........#.........................#...#....................#..
 .............#........#.............#...........#..#..#.......................................................#......#............
 #...................#.#........................................#..................................#...#..........................."""
 
-def printGrid(d,seen,w,h):
-    os.system("clear")
-    o = ""
-    for r in range(h):
-        for c in range(w):
-            t = (c,r)
-            o += d[t]
-        o += "\n"
-    print(o)
-    print(len(seen))  
-    #time.sleep(0.01)  
+# Run the part1 function
+print(part1(data))
 
-# Converting the input string into a 2D grid list
-def parse_input(data):
-    rows = data.split("\n")
-    w = len(rows[0])
-    h = len(rows)
-    d = {(c, r): val for r, row in enumerate(rows) for c, val in enumerate(row)}
-    return d, w, h
-
-def part1(data):
-    d, w, h = parse_input(data)
-    for c in range(w):
-        for r in range(h):
-            if d[(c,r)] == "^":
-                g = (c,r)
-    seen = {g}
-    printGrid(d, seen, w, h)
-    while True:
-        curGua = d[g]
-        orient = DIR[curGua]
-        next = (orient[0] + g[0], orient[1] + g[1])
-        if 0 <= next[0] < w and 0 <= next[1] < h:
-            if d[next] == OBSTACLE:
-                # rotate right
-                index = list(DIR.keys()).index(curGua)
-                index = (index + 1) % len(DIR.keys())
-                curGua = list(DIR.keys())[index]
-                orient = DIR[curGua]
-                next = (orient[0] + g[0], orient[1] + g[1])
-
-            d[g] = "X"
-            g = next
-            d[g] = curGua
-            seen.add(g)
-            printGrid(d, seen, w, h)
-        else:
-            return len(seen)
-
-
-def part2(data):
-    """
-    Solve Part 2 (to be implemented later).
-    """
-    pass
-
-# Main execution
-print(part1(data))  # Solve Part 1
-print(part2(data))  # Placeholder for Part 2
+# Prevent the window from closing immediately
+turtle.done()
